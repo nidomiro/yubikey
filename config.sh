@@ -1,12 +1,22 @@
-
 DATE_SUFFIX=$(date +%F)
 
-IDENTITY="My Name <me@example.org>"
+
+
+IDENTITY="My Name <me@example.org>" # The Identity the keys will be created for
+
+CERTIFY_PASS="MySecretPassphrase" # The password used to protect the secret keys
+
+YUBIKEY_USER_PIN="123456" # The User PIN you want to set on the YubiKey
+YUBIKEY_ADMIN_PIN="12345678" # The Admin PIN you want to set on the YubiKey
+
+YUBIKEY_PGP_RETRIES="3 3 3" # Number of retries for User PIN, Admin PIN, Reset Code
+
+
+
 KEY_TYPE_SIGN="ed25519"
 KEY_TYPE_ENC="cv25519"
 KEY_TYPE_AUTH="ed25519"
 SUBKEY_EXPIRATION="2y"
-CERTIFY_PASS="MySecretPassphrase"
 
 KEY_BACKUP_FOLDER="$PWD/backup"
 export GNUPGHOME="$PWD/gnupg-create"

@@ -1,5 +1,5 @@
 log() {
-    printf "\033[0;32m%s\033[0m\n" "$@"
+    printf "\033[0;34m%s\033[0m\n" "$@"
 }
 
 function init_gnupg_home() {
