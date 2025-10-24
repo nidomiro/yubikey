@@ -75,7 +75,7 @@ log "Selected key ID: $SELECTED_KEY_ID"
 log "Importing keys for key ID: $SELECTED_KEY_ID"
 
 # Import public key
-public_key_file="$KEY_BACKUP_FOLDER/$SELECTED_KEY_ID-"*".asc"
+public_key_file="$KEY_BACKUP_FOLDER/$SELECTED_KEY_ID-"*".pub.asc"
 if ls $public_key_file 1> /dev/null 2>&1; then
     for file in $public_key_file; do
         log "Importing public key: $(basename "$file")"

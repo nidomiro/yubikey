@@ -69,7 +69,7 @@ echo "$CERTIFY_PASS" | \
         --pinentry-mode=loopback --passphrase-fd 0 \
         --armor --export-secret-subkeys "$KEY_ID"
 
-gpg --batch --output "$KEY_BACKUP_FOLDER/$KEY_ID-$DATE_SUFFIX.asc" \
+gpg --batch --output "$KEY_BACKUP_FOLDER/$KEY_ID-$DATE_SUFFIX.pub.asc" \
     --armor --export "$KEY_ID"
     
 gpg --batch --output "$KEY_BACKUP_FOLDER/$KEY_ID-$DATE_SUFFIX.id.pub" \
