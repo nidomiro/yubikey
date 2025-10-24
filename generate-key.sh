@@ -1,56 +1,18 @@
 #!/bin/bash
 
 set -e
-DATE_SUFFIX=$(date +%F)
 
 
-IDENTITY="My Name <me@example.org>"
-KEY_TYPE_SIGN="ed25519"
-KEY_TYPE_ENC="cv25519"
-KEY_TYPE_AUTH="ed25519"
-SUBKEY_EXPIRATION="2y"
-CERTIFY_PASS="MySecretPassphrase"
+. ${PWD}/config.sh
+. ${PWD}/common.sh
 
-KEY_BACKUP_FOLDER="$PWD/backup"
-export GNUPGHOME="$PWD/gnupg-create"
-
-
-log() {
-    printf "\033[0;32m%s\033[0m\n" "$@"
-}
-
-# Create folders if doesn't exist
 if [ ! -d "$KEY_BACKUP_FOLDER" ]; then
-    mkdir -p "$KEY_BACKUP_FOLDER"
-fi
-if [ ! -d "$GNUPGHOME" ]; then
-    mkdir -p "$GNUPGHOME"
-fi
+        mkdir -p "$KEY_BACKUP_FOLDER"
+    fi
 
-chmod 700 "$GNUPGHOME"
 
-cp -pf $PWD/hardened-gpg.conf "$GNUPGHOME/gpg.conf"
 
-# Create gpg-agent.conf for batch operations and sandboxing
-cat > "$GNUPGHOME/gpg-agent.conf" << EOF
-allow-loopback-pinentry
-pinentry-program /usr/bin/pinentry-curses
-default-cache-ttl 0
-max-cache-ttl 0
-no-grab
-EOF
-
-# Create dirmngr.conf for network isolation
-cat > "$GNUPGHOME/dirmngr.conf" << EOF
-disable-http
-disable-ldap
-EOF
-
-# Kill any existing gpg-agent and dirmngr, start fresh
-gpgconf --kill gpg-agent
-gpgconf --kill dirmngr
-
-log "Starting sandboxed GPG environment in: $GNUPGHOME"
+init_gnupg_home
 
 # Generate Master&sign key
 log "Generating master key for identity: $IDENTITY"
