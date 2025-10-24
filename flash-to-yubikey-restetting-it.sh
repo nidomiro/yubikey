@@ -24,6 +24,63 @@ fi
 command -v ykman >/dev/null 2>&1 || { echo "ykman is not installed or not in PATH."; exit 1; }
 command -v gpg >/dev/null 2>&1 || { echo "gpg is not installed or not in PATH."; exit 1; }
 
+# Function to list available secret keys
+list_available_secret_keys() {
+    AVAILABLE_SECRET_KEYS=()
+    
+    log "Scanning for available secret keys..."
+    
+    # Get secret keys with key IDs
+    local secret_keys=$(gpg --list-secret-keys --with-colons | grep '^sec:' | cut -d: -f5)
+    
+    for key_id in $secret_keys; do
+        # Get the identity (name and email) for this key
+        local identity=$(gpg --list-keys --with-colons "$key_id" | grep '^uid:' | head -1 | cut -d: -f10)
+        AVAILABLE_SECRET_KEYS+=("$key_id:$identity")
+    done
+    
+    if [ ${#AVAILABLE_SECRET_KEYS[@]} -eq 0 ]; then
+        log "No secret keys found in GPG keyring"
+        log "Please import keys first using ./import-key-backup.sh"
+        exit 1
+    fi
+}
+
+# Function to show key selection menu
+select_secret_key() {
+    log "Available secret keys:"
+    for i in "${!AVAILABLE_SECRET_KEYS[@]}"; do
+        local key_pair="${AVAILABLE_SECRET_KEYS[i]}"
+        local key_id="${key_pair%%:*}"
+        local identity="${key_pair#*:}"
+        printf "\033[0;33m%d)\033[0m %s - %s\n" "$((i+1))" "$key_id" "$identity"
+    done
+    echo
+    
+    while true; do
+        printf "\033[0;36mSelect key to transfer to YubiKey (1-${#AVAILABLE_SECRET_KEYS[@]}):\033[0m "
+        read choice
+        if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le ${#AVAILABLE_SECRET_KEYS[@]} ]; then
+            local selected_pair="${AVAILABLE_SECRET_KEYS[$((choice-1))]}"
+            SELECTED_KEY_ID="${selected_pair%%:*}"
+            return
+        else
+            printf "\033[0;31mInvalid choice. Please select a number between 1 and ${#AVAILABLE_SECRET_KEYS[@]}.\033[0m\n"
+        fi
+    done
+}
+
+# Global arrays for key selection
+declare -a AVAILABLE_SECRET_KEYS
+SELECTED_KEY_ID=""
+
+# Get available secret keys and let user select
+list_available_secret_keys
+select_secret_key
+
+log "Selected key ID: $SELECTED_KEY_ID"
+KEY_ID="$SELECTED_KEY_ID"
+
 
 log "Resetting YubiKey OpenPGP applet..."
 ykman openpgp reset
@@ -66,7 +123,7 @@ quit
 EOF
 
 log "Move the Certify&Sign key to YubiKey slot 1"
-gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEYID <<EOF
+gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEY_ID <<EOF
 key 0
 keytocard
 y
@@ -77,7 +134,7 @@ save
 EOF
 
 log "Move the Encryption subkey to YubiKey slot 2"
-gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEYID <<EOF
+gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEY_ID <<EOF
 key 1
 keytocard
 2
@@ -87,7 +144,7 @@ save
 EOF
 
 log "Move the Authentication subkey to YubiKey slot 3"
-gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEYID <<EOF
+gpg --command-fd=0 --pinentry-mode=loopback --edit-key $KEY_ID <<EOF
 key 2
 keytocard
 3
