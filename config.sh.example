@@ -20,3 +20,4 @@ SUBKEY_EXPIRATION="2y"
 
 KEY_BACKUP_FOLDER="$PWD/backup"
 export GNUPGHOME="$PWD/gnupg-create"
+#export GNUPGHOME="$HOME/.gnupg"
