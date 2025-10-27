@@ -56,7 +56,7 @@ ssb>  ed25519/0x0000000000000000 2025-10-25 [A] [expires: 2027-10-25]
 You can now use your yubikey.
 It may be a good Idea to copy of your public keys (`*.pub.asc` and `*.id.pub`) to a non-encrypted place.
 
-## Additional yubikey configuration
+## Configure touch and PIN caching
 
 You may want to disable forcesig and enable touch for signing.
 In the following setup you will have to enter your PIN once and touch the yubikey for the first time. If a signing request happens within the next 15 seconds, no touch is required. After 15 seconds a touch is required again, but no PIN entry.
@@ -66,9 +66,9 @@ gpg --edit-card
 # ...
 # Signature PIN ....: forced
 # ...
-admin
-forcesig
-quit
+#> admin
+#> forcesig
+#> quit
 ```
 
 When executing `gpg --card-status` you should see:
@@ -87,4 +87,24 @@ for other options see:
 
 ```shell
 ykman openpgp keys set-touch --help
+```
+
+## Set URL in opengpg on yubikey
+
+You can set a URL to your public keyserver entry in the yubikey's OpenPGP applet.
+With this, you can download the public key directly via:
+
+```shell
+gpg --card-edit
+#> fetch
+```
+
+To set the URL, use:
+
+```shell
+gpg --edit-card
+#> admin
+#> url
+#> <enter your URL here>
+#> quit
 ```
